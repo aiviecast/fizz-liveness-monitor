@@ -1,0 +1,19 @@
+import self as lv
+test "tick action: alive→ping(0), not-alive→terminate(1)" {
+  assert_eq(lv.tick_action(true), 0)
+  assert_eq(lv.tick_action(false), 1)
+}
+test "next_alive resets to false; on_pong is true" {
+  assert_eq(lv.next_alive(true), false)
+  assert_eq(lv.on_pong(), true)
+}
+test "is_dead: > 2*interval" {
+  assert_eq(lv.is_dead(11000, 0, 5000), true)    // 11s > 10s
+  assert_eq(lv.is_dead(10001, 0, 5000), true)
+  assert_eq(lv.is_dead(9000, 0, 5000), false)    // 9s < 10s
+  assert_eq(lv.is_dead(10000, 0, 5000), false)   // ちょうど 10s は生存 (>)
+}
+test "constants" {
+  assert_eq(lv.interval_ms(), 5000)
+  assert_eq(lv.detection_bound_ms(), 10000)
+}

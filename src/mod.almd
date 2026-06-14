@@ -1,0 +1,34 @@
+// fizz_liveness_monitor — ping/pong による接続死活判定(§7 Hub)。
+//
+// 責務 (一行): 各接続の「前 tick 以降に pong が返ったか」フラグから、tick ごとに
+// その接続を terminate すべきか / ping を送って次を待つべきかを決める。
+//
+// 状態機械 (openaituber server.ts と同一):
+//   - pong 受信 → alive = true
+//   - PING_INTERVAL ごとの tick:
+//       alive == false (前 tick 以降 pong 無し) → 死亡とみなし terminate
+//       alive == true  → alive = false にして ping を送る(次 tick までに pong を待つ)
+//   これで接続死は最遅 2*interval (= 10s) で検知できる。
+//
+// WS の ping 送信 / terminate / pong 受信は Node の I/O。判定ロジックは純粋なので
+// Almide に集約。tick 結果: 0 = ping-and-await, 1 = terminate。
+
+let PING_INTERVAL_MS = 5000
+let DETECTION_BOUND_MS = 10000   // 2 * interval (最遅検知時間)
+
+fn interval_ms() -> Int = PING_INTERVAL_MS
+fn detection_bound_ms() -> Int = DETECTION_BOUND_MS
+
+// pong 受信時の次状態。
+fn on_pong() -> Bool = true
+
+// tick での判定。alive=false なら terminate(1)、true なら ping-and-await(0)。
+fn tick_action(alive: Bool) -> Int = if alive then 0 else 1
+
+// tick 後の alive (terminate しない場合は false にして次の pong を待つ)。
+fn next_alive(alive: Bool) -> Bool = if alive then false else false
+
+// タイムスタンプ版: 最後の pong から now までが 2*interval を超えていれば死亡。
+// (フラグ版と等価な、時刻ベースの判定が欲しい場合用。)
+fn is_dead(now_ms: Int, last_pong_ms: Int, interval_ms: Int) -> Bool =
+  now_ms - last_pong_ms > 2 * interval_ms

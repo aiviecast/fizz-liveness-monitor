@@ -1,0 +1,4 @@
+[package]
+name = "fizz_liveness_monitor"
+version = "0.1.0"
+description = "Fizz liveness monitor — ping/pong death detection for WS connections (terminate if no pong since last tick). One Almide core, native + wasm."

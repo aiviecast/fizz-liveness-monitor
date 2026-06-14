@@ -1,0 +1,14 @@
+// CLI (native) — デモ。tick の判定と時刻ベース死活を出す。
+import self as lv
+import json
+import value
+
+effect fn main() -> Unit = {
+  println(json.stringify(value.object([
+    ("alive_tick", value.int(lv.tick_action(true))),    // 0 = ping-and-await
+    ("dead_tick", value.int(lv.tick_action(false))),     // 1 = terminate
+    ("interval_ms", value.int(lv.interval_ms())),
+    ("dead_at_11s", value.bool(lv.is_dead(11000, 0, 5000))),   // 11s > 10s → 死亡
+    ("alive_at_9s", value.bool(lv.is_dead(9000, 0, 5000))),    // 9s < 10s → 生存
+  ])))
+}
