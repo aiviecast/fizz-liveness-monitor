@@ -4,14 +4,14 @@ import float
 import int
 
 @export(wasm, "tick_action")
-fn tick_action(alive: Float) -> Float = int.to_float(lv.tick_action(alive > 0.5))
+fn tick_action(alive: Float) -> Float = float.from(lv.tick_action(alive > 0.5))
 
 @export(wasm, "is_dead")
 fn is_dead(now_ms: Float, last_pong_ms: Float, interval_ms: Float) -> Float =
-  if lv.is_dead(float.to_int(now_ms), float.to_int(last_pong_ms), float.to_int(interval_ms)) then 1.0 else 0.0
+  if lv.is_dead(int.from_saturating(now_ms), int.from_saturating(last_pong_ms), int.from_saturating(interval_ms)) then 1.0 else 0.0
 
 @export(wasm, "interval_ms")
-fn interval_ms() -> Float = int.to_float(lv.interval_ms())
+fn interval_ms() -> Float = float.from(lv.interval_ms())
 
 effect fn main() -> Unit = {
   let _a = tick_action(1.0)
